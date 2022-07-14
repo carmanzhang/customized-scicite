@@ -1,6 +1,6 @@
-allennlp
-scikit-learn
-python-levenshtein
-jsonlines
-
-
+allennlp==0.8.0
+scikit-learn==0.20.3
+python-Levenshtein==0.12.0
+jsonlines==2.0.0
+torch==1.4.0
+torchtext==0.6.0

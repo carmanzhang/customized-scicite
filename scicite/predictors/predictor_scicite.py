@@ -25,30 +25,37 @@ class PredictorSciCite(Predictor):
     def predict_json(self, inputs: JsonDict) -> JsonDict:
         return_dict = {}
 
-        citation = read_s2_excerpt(inputs)
-        # skip if the excerpt is not a valid sentence
-        if len(citation.text) < 5 or not is_sentence(citation.text):
-            return_dict['citingPaperId'] = inputs['citingPaperId']
-            return_dict['citedPaperId'] = inputs['citedPaperId']
-            return_dict['prediction'] = ''
-        else:
-            instance = self._dataset_reader.text_to_instance(
-                citation_text=citation.text,
-                intent=citation.intent,
-                citing_paper_id=citation.citing_paper_id,
-                cited_paper_id=citation.cited_paper_id,
-                citation_excerpt_index=citation.citation_excerpt_index
-            )
-            outputs = self._model.forward_on_instance(instance)
+        try:
+            citation = read_s2_excerpt(inputs)
+            # skip if the excerpt is not a valid sentence
+            if len(citation.text) < 5 or not is_sentence(citation.text):
+                return_dict['citingPaperId'] = inputs['citingPaperId']
+                return_dict['citedPaperId'] = inputs['citedPaperId']
+                return_dict['prediction'] = ''
+            else:
+                instance = self._dataset_reader.text_to_instance(
+                    citation_text=citation.text,
+                    intent=citation.intent,
+                    citing_paper_id=citation.citing_paper_id,
+                    cited_paper_id=citation.cited_paper_id,
+                    citation_excerpt_index=citation.citation_excerpt_index
+                )
+                outputs = self._model.forward_on_instance(instance)
 
-            return_dict['citingPaperId'] = outputs.get('citing_paper_id')
-            return_dict['citedPaperId'] = outputs.get('cited_paper_id')
-            return_dict['citation_id'] = citation.citation_id
-            return_dict['probabilities'] = outputs.get('probabilities')
-            return_dict['prediction'] = outputs['prediction']
-            return_dict['original_label'] = citation.intent
-            return_dict['citation_text'] = outputs.get('citation_text')
-            return_dict['attention_dist'] = outputs.get('attn_dist')
+                return_dict['citingPaperId'] = outputs.get('citing_paper_id')
+                return_dict['citedPaperId'] = outputs.get('cited_paper_id')
+                return_dict['citation_id'] = citation.citation_id
+                return_dict['probabilities'] = outputs.get('probabilities')
+                return_dict['prediction'] = outputs['prediction']
+                return_dict['original_label'] = citation.intent
+                return_dict['citation_text'] = outputs.get('citation_text')
+                return_dict['attention_dist'] = outputs.get('attn_dist')
+        except Exception as e:
+            print(e)
+            return_dict['citingPaperId'] = ''
+            return_dict['citedPaperId'] = ''
+            return_dict['prediction'] = ''
+        print('mid result', return_dict)
         return return_dict
 
     @overrides
@@ -57,7 +64,8 @@ class PredictorSciCite(Predictor):
         If you don't want your outputs in JSON-lines format
         you can override this function to output them differently.
         """
-        keys = ['citedPaperId', 'citingPaperId', 'excerptCitationIntents', 'prediction']
+        keys = ['citingPaperId', 'citedPaperId', 'prediction', 'probabilities']
+        # keys = ['citingPaperId', 'citedPaperId', 'excerptCitationIntents', 'prediction']
         for k in outputs.copy():
             if k not in keys:
                 outputs.pop(k)

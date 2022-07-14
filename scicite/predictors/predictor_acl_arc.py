@@ -7,6 +7,7 @@ from overrides import overrides
 from allennlp.common.util import JsonDict
 from allennlp.data import Instance
 from allennlp.service.predictors.predictor import Predictor
+from pyparsing import Each
 
 from scicite.data import read_jurgens_jsonline
 from scicite.helper import JsonFloatEncoder
@@ -19,26 +20,35 @@ class CitationIntentPredictorACL(Predictor):
     
     @overrides
     def predict_json(self, inputs: JsonDict) -> JsonDict:
-        return_dict = {}
-        citation = read_jurgens_jsonline(inputs)
-        if len(citation.text) == 0:
-            print('empty context, skipping')
-            return {}
-        print(self._dataset_reader)
-        instance = self._dataset_reader.text_to_instance(
-            citation_text=citation.text,
-            intent=citation.intent,
-            citing_paper_id=citation.citing_paper_id,
-            cited_paper_id=citation.cited_paper_id,
-            citation_excerpt_index=citation.citation_excerpt_index
-        )
-        outputs = self._model.forward_on_instance(instance)
+        try:
+            return_dict = {}
+            citation = read_jurgens_jsonline(inputs)
+            if len(citation.text) == 0:
+                print('empty context, skipping')
+                return {}
+            print(self._dataset_reader)
+            instance = self._dataset_reader.text_to_instance(
+                citation_text=citation.text,
+                intent=citation.intent,
+                citing_paper_id=citation.citing_paper_id,
+                cited_paper_id=citation.cited_paper_id,
+                citation_excerpt_index=citation.citation_excerpt_index
+            )
+            outputs = self._model.forward_on_instance(instance)
 
-        return_dict['citation_id'] = citation.citation_id
-        return_dict['citingPaperId'] = outputs['citing_paper_id']
-        return_dict['citedPaperId'] = outputs['cited_paper_id']
-        return_dict['probabilities'] = outputs['probabilities']
-        return_dict['prediction'] = outputs['prediction']
+            return_dict['citation_id'] = citation.citation_id
+            return_dict['citingPaperId'] = outputs['citing_paper_id']
+            return_dict['citedPaperId'] = outputs['cited_paper_id']
+            return_dict['probabilities'] = outputs['probabilities']
+            return_dict['prediction'] = outputs['prediction']
+        except Exception as e:
+            print(e)
+            return_dict['citation_id'] = citation.citation_id
+            return_dict['citingPaperId'] = ''
+            return_dict['citedPaperId'] = ''
+            return_dict['probabilities'] = ''
+            return_dict['prediction'] = ''
+        # print('mid result', return_dict)
         return return_dict
 
     @overrides
@@ -47,7 +57,7 @@ class CitationIntentPredictorACL(Predictor):
         If you don't want your outputs in JSON-lines format
         you can override this function to output them differently.
         """
-        keys = ['citation_id', 'prediction', 'probabilities', 'citation_text']
+        keys = ['citingPaperId', 'citedPaperId', 'prediction', 'probabilities']
         for k in outputs.copy():
             if k not in keys:
                 outputs.pop(k)

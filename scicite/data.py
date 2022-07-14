@@ -493,26 +493,36 @@ def read_s2_jsonline(ex, evaluate_mode=False, clean_citation=True, multilabel=Fa
         citations.append(citation)
     return citations
 
-
+'''
+{
+  "citingPaperId": "6570918461994700813",
+  "citedPaperId": "2523562",
+  "sectionName": "introuction",
+  "string": "before ...",
+  "label": null,
+  "excerpt_index": 0
+}
+'''
 def read_jurgens_jsonline(ex):
     citation_obj = Citation(
-        text=ex.get('text'),
-        citing_paper_id=ex.get('citing_paper_id'),
-        cited_paper_id=ex.get('cited_paper_id'),
-        citing_paper_title=ex.get('citing_paper_title'),
-        cited_paper_title=ex.get('cited_paper_title'),
-        citing_paper_year=ex.get('citing_paper_year'),
-        cited_paper_year=ex.get('cited_paper_year'),
-        cited_author_ids=ex.get('cited_author_ids'),
-        extended_context=ex.get('extended_context'),
-        section_number=ex.get('section_number'),
-        section_title=ex.get('section_title'),
-        intent=ex.get('intent'),
-        cite_marker_offset=ex.get('cite_marker_offset'),
-        sents_before=ex.get('sents_before'),
-        sents_after=ex.get('sents_after'),
-        cleaned_cite_text=ex.get('cleaned_cite_text'),
-        citation_id=ex.get('citation_id'),
+        text=ex.get('string'),
+        citing_paper_id=ex.get('citingPaperId'),
+        cited_paper_id=ex.get('citedPaperId'),
+        # citing_paper_title=ex.get('citing_paper_title'),
+        # cited_paper_title=ex.get('cited_paper_title'),
+        # citing_paper_year=ex.get('citing_paper_year'),
+        # cited_paper_year=ex.get('cited_paper_year'),
+        # cited_author_ids=ex.get('cited_author_ids'),
+        # extended_context=ex.get('extended_context'),
+        # section_number=ex.get('section_number'),
+        section_title=ex.get('sectionName'),
+        intent=ex.get('label'),
+        citation_excerpt_index=ex.get('excerpt_index'),
+        # cite_marker_offset=ex.get('cite_marker_offset'),
+        # sents_before=ex.get('sents_before'),
+        # sents_after=ex.get('sents_after'),
+        # cleaned_cite_text=ex.get('cleaned_cite_text'),
+        citation_id=ex.get('citingPaperId'),
     )
     return citation_obj
 
